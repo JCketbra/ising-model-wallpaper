@@ -98,9 +98,6 @@ const WINDOW_Y: i32 = 1200;
 const MATRIX_X: usize = 100;
 const MATRIX_Y: usize = 100;
 
-const CELL_PADDING: f32 = 0.12;
-const CELL_ROUNDING: f32 = 0.35;
-
 fn window_conf() -> Conf {
     Conf {
         window_title: "XY Model".to_owned(),
@@ -125,8 +122,8 @@ async fn main() {
     let material = renderer::create_material(MATRIX_X, MATRIX_Y);
 
     // External Field
-    const H: f32 = 0.010;
-    const A: f32 = 6.0;
+    const H: f32 = 0.02;
+    const A: f32 = 3.0;
     const B: f32 = 4.0;
 
     let external_field: Box<[ising_engine::ExternalField]> = (0..MATRIX_X * MATRIX_Y)
@@ -142,7 +139,7 @@ async fn main() {
         .collect();
 
     let params = ising_engine::IsingModelParameters {
-        temperature: 0.1,
+        temperature: 0.2,
         coupling_j: 1.0,
         matrix_x: MATRIX_X,
         matrix_y: MATRIX_Y,

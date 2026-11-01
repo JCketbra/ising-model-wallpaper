@@ -2,7 +2,7 @@ use macroquad::prelude::*;
 use std::f32::consts::{FRAC_PI_2, PI, TAU};
 
 const PADDING: f32 = 0.12;
-const ROUNDING: f32 = 0.25;
+const ROUNDING: f32 = 0.32;
 
 fn lerp_color(a: Color, b: Color, t: f32) -> Color {
     Color::new(
