@@ -78,34 +78,27 @@ uniform float Padding;
 uniform float Radius;
 
 void main() {
-    // Indeks spinu w teksturze
     vec2 index = floor(uv * GridSize);
     vec2 sample_uv = (index + 0.5) / GridSize;
-
     vec3 color = texture2D(Texture, sample_uv).rgb;
 
-    // Przy bardzo małych komórkach nie dodajemy odstępów
     if (CellPixels < 4.0) {
         gl_FragColor = vec4(color, 1.0);
         return;
     }
 
-    // Pozycja lokalna wewnątrz pojedynczej komórki
     vec2 p = fract(uv * GridSize) - 0.5;
 
     float half_size = 0.5 - Padding * 0.5;
     float r = min(Radius, half_size);
 
-    // Signed Distance Field zaokrąglonego kwadratu
     vec2 q = abs(p) - vec2(half_size - r);
     float distance = length(max(q, 0.0))
                    + min(max(q.x, q.y), 0.0) - r;
 
-    // Wygładzenie krawędzi
     float aa = 0.5 / CellPixels;
     float mask = 1.0 - smoothstep(-aa, aa, distance);
 
-    // Tło pomiędzy komórkami
     vec3 background = vec3(0.06, 0.06, 0.08);
 
     gl_FragColor = vec4(mix(background, color, mask), 1.0);
