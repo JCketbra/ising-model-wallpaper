@@ -3,6 +3,7 @@ use std::f32::consts::TAU;
 
 mod ising_engine;
 mod renderer;
+mod spin;
 
 const WINDOW_X: i32 = 1200;
 const WINDOW_Y: i32 = 1200;

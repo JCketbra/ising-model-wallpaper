@@ -2,14 +2,18 @@ use rand::RngExt;
 use rand::{random, random_range};
 use std::f32::consts::TAU; //Tau - const 2Pi
 
-pub fn generate_initial_state(matrix_x: usize, matrix_y: usize) -> Box<[f32]> {
-    let mut spin_matrix: Box<[f32]> = vec![0.0; matrix_x * matrix_y].into_boxed_slice();
-
+use crate::spin::Spin;
+pub fn generate_initial_state(
+    matrix_x: usize,
+    matrix_y: usize,
+) -> Box<[Spin]> {
     let mut rng = rand::rng();
 
-    for spin in spin_matrix.iter_mut() {
-        *spin = rng.random_range(0.0_f32..TAU);
-    }
+    let mut spin_matrix: Box<[Spin]> =
+    (0..matrix_x * matrix_y)
+    .map(|_| Spin::from_raw(rng.random()))
+    .collect::<Vec<_>>()
+    .into_boxed_slice();
 
     spin_matrix
 }
@@ -26,8 +30,9 @@ pub struct IsingModelParameters {
     pub matrix_y: usize,
 }
 
+
 pub fn ising_step(
-    spin_matrix: &mut [f32],
+    spin_matrix: &mut [Spin],
     external_field: &[ExternalField],
     params: &IsingModelParameters,
 ) {
@@ -52,9 +57,13 @@ pub fn ising_step(
         let down = ((y + 1) % height) * width + x;
 
         let old_angle = spin_matrix[i];
-        let delta = rng.random_range(-std::f32::consts::FRAC_PI_4..std::f32::consts::FRAC_PI_4);
+        let delta = Spin::random_range(
+            &mut rng,
+            -8192,
+            8192,
+        );
 
-        let new_angle = (old_angle + delta).rem_euclid(TAU);
+        let new_angle = old_angle + delta;
 
         let mut ax = external_field[i].x;
         let mut ay = external_field[i].y;

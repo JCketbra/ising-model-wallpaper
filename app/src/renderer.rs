@@ -1,5 +1,6 @@
 use macroquad::prelude::*;
 use std::f32::consts::{FRAC_PI_2, PI, TAU};
+use crate::spin::Spin;
 
 const PADDING: f32 = 0.12;
 const ROUNDING: f32 = 0.32;
@@ -41,12 +42,12 @@ fn spin_to_color(angle: f32) -> Color {
     )
 }
 
-pub fn update_image(image: &mut Image, spins: &[f32]) {
+pub fn update_image(image: &mut Image, spins: &[Spin]) {
     let pixels = image.get_image_data_mut();
     assert_eq!(pixels.len(), spins.len());
 
     for (pixel, &angle) in pixels.iter_mut().zip(spins.iter()) {
-        *pixel = spin_to_color(angle).into();
+        *pixel = spin_to_color(angle.into()).into();
     }
 }
 
