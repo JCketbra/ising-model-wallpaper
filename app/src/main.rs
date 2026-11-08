@@ -84,18 +84,28 @@ async fn main() {
     };
 
     const TPS_SAMPLE_SECONDS: f64 = 1.0;
-    const TPS_TOLERANCE: f64 = 0.05;
     let mut target_tps = 144.0_f32;
     let mut current_tps = 0.0_f64;
     let mut sample_start = get_time();
     let mut sample_ticks = 0_u32;
-    let mut sleep_seconds = 0.0_f64;
+    let mut next_tick = sample_start;
+    let mut scheduled_tps = target_tps;
 
     loop {
-        ising_engine::ising_step(&mut spin_matrix, &external_field, &params);
-
-        renderer::update_image(&mut image, &spin_matrix);
-        texture.update(&image);
+        let now = get_time();
+        if target_tps != scheduled_tps {
+            scheduled_tps = target_tps;
+            next_tick = now;
+        }
+        if now >= next_tick {
+            let interval = 1.0 / f64::from(target_tps);
+            // Skip missed deadlines instead of running catch-up ticks.
+            next_tick = now + interval - (now - next_tick) % interval;
+            ising_engine::ising_step(&mut spin_matrix, &external_field, &params);
+            renderer::update_image(&mut image, &spin_matrix);
+            texture.update(&image);
+            sample_ticks += 1;
+        }
 
         clear_background(BLACK);
         renderer::render(&texture, &material, matrix_x, matrix_y, cell_pixels);
@@ -113,24 +123,12 @@ async fn main() {
         }
 
         next_frame().await;
-        sample_ticks += 1;
         let now = get_time();
         let elapsed = now - sample_start;
         if elapsed >= TPS_SAMPLE_SECONDS {
             current_tps = f64::from(sample_ticks) / elapsed;
-            let target = f64::from(target_tps);
-            if current_tps < target * (1.0 - TPS_TOLERANCE)
-                || current_tps > target * (1.0 + TPS_TOLERANCE)
-            {
-                sleep_seconds = (sleep_seconds
-                    + 0.5 * (1.0 / target - elapsed / f64::from(sample_ticks)))
-                    .max(0.0);
-            }
             sample_ticks = 0;
             sample_start = now;
-        }
-        if sleep_seconds > 0.0 {
-            std::thread::sleep(std::time::Duration::from_secs_f64(sleep_seconds));
         }
     }
 }
