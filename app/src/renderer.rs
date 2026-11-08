@@ -1,6 +1,6 @@
+use crate::spin::Spin;
 use macroquad::prelude::*;
 use std::f32::consts::{FRAC_PI_2, PI, TAU};
-use crate::spin::Spin;
 
 const PADDING: f32 = 0.12;
 const ROUNDING: f32 = 0.32;
@@ -131,8 +131,9 @@ pub fn create_material(width: usize, height: usize) -> Material {
     material
 }
 
-pub fn render(texture: &Texture2D, material: &Material, width: usize, height: usize) {
-    let cell_size = (screen_width() / width as f32).min(screen_height() / height as f32);
+pub fn render(texture: &Texture2D, material: &Material, width: usize, height: usize, cell_pixels: f32) {
+    // Macroquad uses logical coordinates; keep the selected display's physical cell size.
+    let cell_size = cell_pixels / screen_dpi_scale();
 
     let render_width = width as f32 * cell_size;
     let render_height = height as f32 * cell_size;
@@ -140,7 +141,7 @@ pub fn render(texture: &Texture2D, material: &Material, width: usize, height: us
     let x = (screen_width() - render_width) * 0.5;
     let y = (screen_height() - render_height) * 0.5;
 
-    material.set_uniform("CellPixels", cell_size);
+    material.set_uniform("CellPixels", cell_pixels);
 
     gl_use_material(material);
 

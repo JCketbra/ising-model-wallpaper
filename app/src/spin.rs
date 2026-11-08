@@ -1,6 +1,6 @@
-use std::f32::consts::TAU;
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul};
 use rand::RngExt;
+use std::f32::consts::TAU;
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Spin(u16);
@@ -34,11 +34,7 @@ impl Spin {
         Self(value)
     }
 
-    pub fn random_range(
-        rng: &mut impl rand::Rng,
-        min: i16,
-        max: i16,
-    ) -> Self {
+    pub fn random_range(rng: &mut impl rand::Rng, min: i16, max: i16) -> Self {
         Self(rng.random_range(min..max) as u16)
     }
 }
