@@ -83,6 +83,14 @@ async fn main() {
         matrix_y,
     };
 
+    const TPS_SAMPLE_SECONDS: f64 = 1.0;
+    const TPS_TOLERANCE: f64 = 0.05;
+    let mut target_tps = 144.0_f32;
+    let mut current_tps = 0.0_f64;
+    let mut sample_start = get_time();
+    let mut sample_ticks = 0_u32;
+    let mut sleep_seconds = 0.0_f64;
+
     loop {
         ising_engine::ising_step(&mut spin_matrix, &external_field, &params);
 
@@ -93,11 +101,36 @@ async fn main() {
         renderer::render(&texture, &material, matrix_x, matrix_y, cell_pixels);
 
         let old_field = field_config;
-        panel.draw(&display, &mut params, &mut field_config);
+        panel.draw(
+            &display,
+            &mut params,
+            &mut field_config,
+            &mut target_tps,
+            current_tps,
+        );
         if old_field != field_config {
             field_config.generate(&mut external_field, matrix_x, matrix_y);
         }
 
         next_frame().await;
+        sample_ticks += 1;
+        let now = get_time();
+        let elapsed = now - sample_start;
+        if elapsed >= TPS_SAMPLE_SECONDS {
+            current_tps = f64::from(sample_ticks) / elapsed;
+            let target = f64::from(target_tps);
+            if current_tps < target * (1.0 - TPS_TOLERANCE)
+                || current_tps > target * (1.0 + TPS_TOLERANCE)
+            {
+                sleep_seconds = (sleep_seconds
+                    + 0.5 * (1.0 / target - elapsed / f64::from(sample_ticks)))
+                    .max(0.0);
+            }
+            sample_ticks = 0;
+            sample_start = now;
+        }
+        if sleep_seconds > 0.0 {
+            std::thread::sleep(std::time::Duration::from_secs_f64(sleep_seconds));
+        }
     }
 }

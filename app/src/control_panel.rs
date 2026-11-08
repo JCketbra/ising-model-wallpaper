@@ -107,6 +107,8 @@ impl ControlPanel {
         display: &DisplayInfo,
         params: &mut IsingModelParameters,
         field: &mut FieldConfig,
+        target_tps: &mut f32,
+        current_tps: f64,
     ) {
         let x = (screen_width() - BUTTON_WIDTH) * 0.5;
         let rect = Rect::new(x, 0.0, BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -135,7 +137,7 @@ impl ControlPanel {
         ui.window(
             hash!(),
             vec2((screen_width() - width) * 0.5, 30.0),
-            vec2(width, 460.0),
+            vec2(width, 510.0),
             |ui| {
                 ui.label(
                     None,
@@ -151,6 +153,8 @@ impl ControlPanel {
                         display.scale_factor, params.matrix_x, params.matrix_y
                     ),
                 );
+                ui.label(None, &format!("Current TPS: {:.1}", current_tps));
+                ui.slider(hash!(), "Target TPS", 1.0..480.0, target_tps);
                 ui.slider(hash!(), "Temperature", 0.0..5.0, &mut params.temperature);
                 ui.slider(hash!(), "Coupling", -5.0..5.0, &mut params.coupling_j);
                 ui.slider(hash!(), "Field strength", 0.0..2.0, &mut field.strength);
